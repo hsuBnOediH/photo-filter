@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (release)
+        run: |
+          swift build -c release 2>&1 | tee build.log
+          if grep -q "warning:" build.log; then
+            echo "::error::Build produced warnings (zero-warning policy)"
+            grep "warning:" build.log
+            exit 1
+          fi
+
+      - name: Localization parity
+        run: bash Scripts/check-l10n.sh
+
+      - name: Assemble app bundle
+        # Proves the hand-assembled bundle (resource-bundle copy, plist, icon,
+        # codesign) never regresses — a missing resource bundle would crash at launch.
+        run: bash build-app.sh
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhotoFilter.app
+          path: PhotoFilter.app
