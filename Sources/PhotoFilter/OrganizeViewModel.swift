@@ -67,7 +67,8 @@ final class OrganizeViewModel: ObservableObject {
 
     /// Thread-safe cancellation signal polled by worker operations between assets —
     /// the operations can't read the main-actor `scanGeneration` themselves.
-    private final class CancelFlag {
+    /// @unchecked: the only state is a bool guarded by the lock.
+    private final class CancelFlag: @unchecked Sendable {
         private let lock = NSLock()
         private var cancelled = false
         var isCancelled: Bool {
@@ -175,7 +176,7 @@ final class OrganizeViewModel: ObservableObject {
             }
             let total = buckets.reduce(0) { $0 + $1.count }
 
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
                 guard let self, self.scanGeneration == generation else { return }
                 self.skippedCount += skippedNoDate
                 self.phase = .analyzing(done: 0, total: total)
@@ -208,7 +209,7 @@ final class OrganizeViewModel: ObservableObject {
                         // Throttle progress: one @Published update per asset would
                         // hammer SwiftUI tens of thousands of times.
                         if reported % 25 == 0 || reported == total {
-                            Task { @MainActor in
+                            Task { @MainActor [weak self] in
                                 guard let self, self.scanGeneration == generation else { return }
                                 self.phase = .analyzing(done: reported, total: total)
                             }
@@ -226,7 +227,7 @@ final class OrganizeViewModel: ObservableObject {
                         )
                     }
                     guard !newGroups.isEmpty || failed > 0 else { return }
-                    Task { @MainActor in
+                    Task { @MainActor [weak self] in
                         guard let self, self.scanGeneration == generation else { return }
                         self.skippedCount += failed
                         if !newGroups.isEmpty { self.appendGroups(newGroups) }
@@ -236,7 +237,7 @@ final class OrganizeViewModel: ObservableObject {
 
             queue.addBarrierBlock {
                 guard !flag.isCancelled else { return }
-                Task { @MainActor in
+                Task { @MainActor [weak self] in
                     guard let self, self.scanGeneration == generation else { return }
                     self.phase = .done
                 }

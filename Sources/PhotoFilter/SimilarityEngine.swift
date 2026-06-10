@@ -2,12 +2,22 @@ import Photos
 import Vision
 import AppKit
 
-/// 相似度三档,映射到 Vision 特征向量的距离阈值。
+/// Three similarity tiers mapping to Vision feature-print distance thresholds.
+/// Raw values are stable English identifiers (persisted in UserDefaults/JSON);
+/// display text comes from `label`.
 enum SimilarityLevel: String, CaseIterable, Identifiable {
-    case strict = "严格"
-    case standard = "标准"
-    case loose = "宽松"
+    case strict
+    case standard
+    case loose
     var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .strict: return "严格"
+        case .standard: return "标准"
+        case .loose: return "宽松"
+        }
+    }
 
     /// Revision-2 distances run roughly 0 (identical) … ~1+ (unrelated); a synthetic
     /// sanity check measured ~0.18 for a near-duplicate pair and ~0.86 for unrelated
@@ -24,7 +34,8 @@ enum SimilarityLevel: String, CaseIterable, Identifiable {
 /// Computes and disk-caches Vision feature prints (a photo's content fingerprint).
 /// Everything here is synchronous and must run on background threads — the scan
 /// pipeline calls it from an OperationQueue and hops results back to the main actor.
-final class SimilarityEngine {
+/// @unchecked: immutable after init (cacheDir is let; file I/O is per-call atomic).
+final class SimilarityEngine: @unchecked Sendable {
     /// Pinned revision: rev-1 and rev-2 prints live on different distance scales and
     /// can't be compared across revisions (computeDistance throws). The cache directory
     /// is namespaced by this constant, so bumping it auto-invalidates old prints.

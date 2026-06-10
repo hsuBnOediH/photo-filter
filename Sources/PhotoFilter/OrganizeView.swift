@@ -106,7 +106,7 @@ struct OrganizeView: View {
                 .font(.footnote)
                 .foregroundStyle(.gray)
             Picker("", selection: Binding(get: { vm.similarity }, set: { vm.similarity = $0 })) {
-                ForEach(SimilarityLevel.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(SimilarityLevel.allCases) { Text($0.label).tag($0) }
             }
             .pickerStyle(.segmented)
             .fixedSize()

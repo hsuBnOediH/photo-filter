@@ -177,6 +177,8 @@ final class CullViewModel: ObservableObject {
     // MARK: Progress persistence (one position per source, survives app relaunch)
 
     private var progressKey: String { "cullProgress-\(source.rawValue)" }
+    /// Pre-1.0 builds keyed progress by the Chinese display name ("cullProgress-截图").
+    private var legacyProgressKey: String { "cullProgress-\(source.label)" }
 
     /// Remember where the user is so the next launch resumes here. Saves the current
     /// asset's id (exact match) plus its date (fallback for when that asset has been
@@ -195,6 +197,12 @@ final class CullViewModel: ObservableObject {
     }
 
     private func restoreProgress() {
+        // One-time migration from the legacy Chinese-named key.
+        if UserDefaults.standard.dictionary(forKey: progressKey) == nil,
+           let legacy = UserDefaults.standard.dictionary(forKey: legacyProgressKey) {
+            UserDefaults.standard.set(legacy, forKey: progressKey)
+            UserDefaults.standard.removeObject(forKey: legacyProgressKey)
+        }
         guard let saved = UserDefaults.standard.dictionary(forKey: progressKey) else { return }
         if let id = saved["id"] as? String,
            let savedIndex = assets.firstIndex(where: { $0.localIdentifier == id }) {

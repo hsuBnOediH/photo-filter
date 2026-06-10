@@ -268,7 +268,7 @@ struct CullView: View {
 
     private var sourcePicker: some View {
         Picker("", selection: Binding(get: { vm.source }, set: { vm.setSource($0) })) {
-            ForEach(PhotoSource.allCases) { Text($0.rawValue).tag($0) }
+            ForEach(PhotoSource.allCases) { Text($0.label).tag($0) }
         }
         .pickerStyle(.segmented)
         .fixedSize()

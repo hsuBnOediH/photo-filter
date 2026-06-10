@@ -1,11 +1,19 @@
 import Photos
 import AppKit
 
-/// Which set of items to review.
+/// Which set of items to review. Raw values are stable English identifiers
+/// (used in UserDefaults keys); display text comes from `label`.
 enum PhotoSource: String, CaseIterable, Identifiable {
-    case screenshots = "截图"
-    case all = "全部"
+    case screenshots
+    case all
     var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .screenshots: return "截图"
+        case .all: return "全部"
+        }
+    }
 }
 
 /// Thin wrapper around PhotoKit. Operates on the System Photo Library, which is the
@@ -14,7 +22,9 @@ enum PhotoSource: String, CaseIterable, Identifiable {
 ///
 /// Completion handlers are invoked on arbitrary queues; callers are responsible for
 /// hopping back to the main actor.
-final class PhotoLibrary {
+/// @unchecked: stateless apart from PHCachingImageManager, which is itself thread-safe;
+/// the scan pipeline calls into this from worker threads.
+final class PhotoLibrary: @unchecked Sendable {
     private let imageManager = PHCachingImageManager()
 
     func requestAuthorization(_ completion: @escaping (PHAuthorizationStatus) -> Void) {
