@@ -52,7 +52,9 @@ echo "==> Release notes from CHANGELOG…"
 awk "/^## \[$VERSION\]/{flag=1; next} /^## \[/{flag=0} flag" CHANGELOG.md > /tmp/pf-notes.md
 [ -s /tmp/pf-notes.md ] || { echo "FAIL: no CHANGELOG section for $VERSION" >&2; exit 1; }
 
-echo "==> Publishing v$VERSION…"
+# NOTE: keep a space (or braces) between $VARs and any non-ASCII char — macOS bash 3.2
+# swallows multibyte chars into the variable name and dies under `set -u`.
+echo "==> Publishing v${VERSION} ..."
 git tag -f "v$VERSION"
 git push origin "v$VERSION"
 gh release create "v$VERSION" "$DMG" "$ZIP" --title "PhotoFilter $VERSION" --notes-file /tmp/pf-notes.md

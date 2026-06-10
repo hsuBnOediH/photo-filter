@@ -267,7 +267,13 @@ final class OrganizeViewModel: ObservableObject {
         library.resetCache()
         phase = .fetching
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+        // Workers capture `self` STRONGLY on purpose: a @MainActor class is Sendable, so
+        // strong (immutable) captures compile clean on every toolchain, while `[weak
+        // self]` bindings are mutable captures that older compilers reject inside
+        // @Sendable closures. No leak: the VM outlives scans anyway (owned by RootView)
+        // and operations release their captures on completion/cancellation.
+        let progress = Tally()
+        DispatchQueue.global(qos: .userInitiated).async {
             let assets = library.fetchPersonalImages()
             let (allBuckets, skippedNoDate) = AssetGrouper.bucket(assets, window: window)
             // Only multi-photo buckets ever reach Vision — scattered single shots cost
@@ -278,15 +284,12 @@ final class OrganizeViewModel: ObservableObject {
             }
             let total = buckets.reduce(0) { $0 + $1.count }
 
-            Task { @MainActor [weak self] in
-                guard let self, self.scanGeneration == generation else { return }
+            Task { @MainActor in
+                guard self.scanGeneration == generation else { return }
                 self.skippedCount += skippedNoDate
                 self.phase = .analyzing(done: 0, total: total)
             }
             guard !flag.isCancelled else { return }
-
-            let lock = NSLock()
-            var done = 0
 
             // STREAMING: one operation per bucket — each computes its own prints,
             // clusters immediately, and publishes any found groups right away, so the
@@ -304,15 +307,12 @@ final class OrganizeViewModel: ObservableObject {
                         } else {
                             failed += 1
                         }
-                        lock.lock()
-                        done += 1
-                        let reported = done
-                        lock.unlock()
+                        let reported = progress.increment()
                         // Throttle progress: one @Published update per asset would
                         // hammer SwiftUI tens of thousands of times.
                         if reported % 25 == 0 || reported == total {
-                            Task { @MainActor [weak self] in
-                                guard let self, self.scanGeneration == generation else { return }
+                            Task { @MainActor in
+                                guard self.scanGeneration == generation else { return }
                                 self.phase = .analyzing(done: reported, total: total)
                             }
                         }
@@ -329,9 +329,10 @@ final class OrganizeViewModel: ObservableObject {
                         )
                     }
                     guard !newGroups.isEmpty || failed > 0 else { return }
-                    Task { @MainActor [weak self] in
-                        guard let self, self.scanGeneration == generation else { return }
-                        self.skippedCount += failed
+                    let finalFailed = failed  // immutable copy crosses into the Task
+                    Task { @MainActor in
+                        guard self.scanGeneration == generation else { return }
+                        self.skippedCount += finalFailed
                         if !newGroups.isEmpty { self.appendGroups(newGroups) }
                     }
                 }
@@ -339,12 +340,24 @@ final class OrganizeViewModel: ObservableObject {
 
             queue.addBarrierBlock {
                 guard !flag.isCancelled else { return }
-                Task { @MainActor [weak self] in
-                    guard let self, self.scanGeneration == generation else { return }
+                Task { @MainActor in
+                    guard self.scanGeneration == generation else { return }
                     self.phase = .done
                     self.scheduleSessionSave(immediately: true)
                 }
             }
+        }
+    }
+
+    /// Lock-guarded counter shared by worker operations — mutable locals can't cross
+    /// @Sendable closure boundaries. @unchecked: single Int behind the lock.
+    private final class Tally: @unchecked Sendable {
+        private let lock = NSLock()
+        private var value = 0
+        func increment() -> Int {
+            lock.lock(); defer { lock.unlock() }
+            value += 1
+            return value
         }
     }
 

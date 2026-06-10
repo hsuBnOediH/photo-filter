@@ -1,13 +1,22 @@
 import AppKit
 import Foundation
 
+/// Non-isolated app constants — usable from menu-bar `Commands` bodies, which are not
+/// main-actor-isolated on older SDKs.
+enum AppInfo {
+    static let repo = "hsuBnOediH/photo-filter"
+    static let repoURL = URL(string: "https://github.com/hsuBnOediH/photo-filter")!
+    static let issuesURL = URL(string: "https://github.com/hsuBnOediH/photo-filter/issues")!
+    static let licenseURL = URL(string: "https://github.com/hsuBnOediH/photo-filter/blob/main/LICENSE")!
+}
+
 /// Update check against GitHub Releases — deliberately NOT Sparkle for v1.0: Sparkle
 /// can't install updates into an ad-hoc-signed app anyway (revisit once Developer ID
 /// signing + notarization land), while "open the download page" works today and needs
 /// no framework embedding.
 @MainActor
 enum UpdateChecker {
-    static let repo = "hsuBnOediH/photo-filter"
+    static let repo = AppInfo.repo
     static var releasesPage: URL { URL(string: "https://github.com/\(repo)/releases/latest")! }
 
     static var currentVersion: String {

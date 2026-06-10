@@ -22,8 +22,8 @@ struct AboutView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
             HStack(spacing: 16) {
-                Link("GitHub", destination: URL(string: "https://github.com/\(UpdateChecker.repo)")!)
-                Link(L("about.license"), destination: URL(string: "https://github.com/\(UpdateChecker.repo)/blob/main/LICENSE")!)
+                Link("GitHub", destination: AppInfo.repoURL)
+                Link(L("about.license"), destination: AppInfo.licenseURL)
             }
             .font(.callout)
         }

@@ -89,7 +89,7 @@ struct RootView: View {
                 HStack(spacing: 8) {
                     Text("v" + (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"))
                     Text("·")
-                    Link("GitHub", destination: URL(string: "https://github.com/\(UpdateChecker.repo)")!)
+                    Link("GitHub", destination: AppInfo.repoURL)
                 }
                 .font(.footnote)
                 .foregroundStyle(.gray)
