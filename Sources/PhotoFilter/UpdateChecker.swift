@@ -7,7 +7,7 @@ import Foundation
 /// no framework embedding.
 @MainActor
 enum UpdateChecker {
-    static let repo = "yukunf/photo-filter"
+    static let repo = "hsuBnOediH/photo-filter"
     static var releasesPage: URL { URL(string: "https://github.com/\(repo)/releases/latest")! }
 
     static var currentVersion: String {

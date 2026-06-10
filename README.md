@@ -4,7 +4,7 @@
 
 A free, open-source, keyboard-first photo cleanup app for macOS. Everything runs on-device — your photos never leave your Mac.
 
-![CI](https://github.com/yukunf/photo-filter/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/hsuBnOediH/photo-filter/actions/workflows/ci.yml/badge.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -37,7 +37,7 @@ PhotoFilter works directly with your **system Photos library** (the one synced b
 
 ## Install
 
-1. Download the latest `PhotoFilter-x.y.z.dmg` from [Releases](https://github.com/yukunf/photo-filter/releases).
+1. Download the latest `PhotoFilter-x.y.z.dmg` from [Releases](https://github.com/hsuBnOediH/photo-filter/releases).
 2. Drag **PhotoFilter** into *Applications*.
 3. First launch: macOS will warn that the app is from an unidentified developer (it isn't notarized yet). Either:
    - Right-click the app → **Open** → **Open**, or
@@ -52,7 +52,7 @@ Requires macOS 14 (Sonoma) or later. Universal binary (Apple Silicon + Intel).
 No Xcode required — just the Command Line Tools:
 
 ```bash
-git clone https://github.com/yukunf/photo-filter.git
+git clone https://github.com/hsuBnOediH/photo-filter.git
 cd photo-filter
 ./build-app.sh            # native arch; add --universal for a fat binary
 open PhotoFilter.app      # launch via Finder/open, NOT `swift run` (Photos permission

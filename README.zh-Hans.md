@@ -4,7 +4,7 @@
 
 免费、开源、键盘优先的 macOS 照片清理工具。所有分析都在本机完成——你的照片永远不会离开你的 Mac。
 
-![CI](https://github.com/yukunf/photo-filter/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/hsuBnOediH/photo-filter/actions/workflows/ci.yml/badge.svg)
 ![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -37,7 +37,7 @@ PhotoFilter 直接操作**系统照片图库**（也就是 iCloud 同步的那�
 
 ## 安装
 
-1. 从 [Releases](https://github.com/yukunf/photo-filter/releases) 下载最新的 `PhotoFilter-x.y.z.dmg`。
+1. 从 [Releases](https://github.com/hsuBnOediH/photo-filter/releases) 下载最新的 `PhotoFilter-x.y.z.dmg`。
 2. 把 **PhotoFilter** 拖进「应用程序」。
 3. 首次打开时 macOS 会提示开发者身份无法验证（应用暂未公证）。任选其一放行：
    - 右键 App → **打开** → **打开**；或
@@ -52,7 +52,7 @@ PhotoFilter 直接操作**系统照片图库**（也就是 iCloud 同步的那�
 不需要 Xcode，只要命令行工具：
 
 ```bash
-git clone https://github.com/yukunf/photo-filter.git
+git clone https://github.com/hsuBnOediH/photo-filter.git
 cd photo-filter
 ./build-app.sh            # 本机架构；加 --universal 出双架构
 open PhotoFilter.app      # 用 Finder/open 启动，不要用 `swift run`
