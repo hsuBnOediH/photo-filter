@@ -47,7 +47,6 @@
 // MARK: Screenshot module (cull)
 "cull.marked.badge" = "待删除";
 "cull.header.review" = "复核并删除";
-"cull.footer.keys" = "←  删除      →  保留      ↑ / ⌘Z  撤销      空格  放大      Esc  返回首页";
 "cull.empty.screenshots" = "没有找到截图。";
 "cull.empty.all" = "没有找到照片。";
 "cull.finished.title" = "已全部审阅 🎉";
@@ -92,11 +91,32 @@
 "organize.queueDone.title" = "这一轮已全部审阅 🎉";
 "organize.queueDone.streamHint" = "扫描还在进行，新发现的组会自动续上。";
 "organize.queueDone.back" = "↑ 回看上一组";
-"organize.footer.keys" = "←/→  选择照片      ⌫  切换保留/待删      K  仅保留这张      Enter  下一组      ↑/↓  前后翻组      空格  放大      Esc  返回";
 "organize.footer.sharedWarning" = "删除会同步到所有设备；如启用 iCloud 共享图库，删除共享照片将对所有成员生效。";
 "organize.footer.skipped" = "跳过 %d 张（无法加载或无拍摄时间）";
 "organize.result.stopped" = "已停止扫描 — 已找到的组保留；特征已缓存，下次扫描会更快。";
 "organize.result.reviewedEmpty" = "已审阅的组没有待删照片，已从队列移除。";
+"organize.resume.button" = "继续上次：%1$d 组（已审 %2$d）";
+"organize.resume.savedAt" = "保存于 %@";
+"result.sessionTotal" = "（本次会话累计删除 %d 张）";
+
+// MARK: Footer legend (compact labels next to live key bindings)
+"legend.delete" = "删除";
+"legend.keep" = "保留";
+"legend.undo" = "撤销";
+"legend.zoom" = "放大";
+"legend.back" = "返回";
+"legend.home" = "返回首页";
+"legend.selectPhoto" = "选择照片";
+"legend.toggleMark" = "切换保留/待删";
+"legend.keepOnly" = "仅保留这张";
+"legend.nextGroup" = "下一组";
+"legend.browseGroups" = "前后翻组";
+"legend.compare" = "对比";
+"legend.pixelZoom" = "像素缩放";
+
+// MARK: Compare overlay
+"compare.reference" = "当前保留";
+"compare.selection" = "当前选择";
 
 // MARK: Group card
 "group.dateUnknown" = "未知时间";
@@ -107,6 +127,22 @@
 "thumb.kept" = "保留";
 "thumb.recommended.help" = "推荐保留";
 "thumb.toggle.help" = "点一下切换保留/待删";
+
+// MARK: Shortcut action names
+"shortcut.action.markDelete" = "标记删除";
+"shortcut.action.keep" = "保留并下一张";
+"shortcut.action.undo" = "撤销";
+"shortcut.action.prevGroup" = "上一组";
+"shortcut.action.nextGroup" = "下一组";
+"shortcut.action.prevPhoto" = "上一张";
+"shortcut.action.nextPhoto" = "下一张";
+"shortcut.action.toggleMark" = "切换保留/待删";
+"shortcut.action.keepOnly" = "仅保留这张";
+"shortcut.action.finishGroup" = "完成本组 → 下一组";
+"shortcut.action.compare" = "与保留照对比";
+"shortcut.action.pixelZoom" = "像素级缩放";
+"shortcut.action.zoom" = "放大";
+"shortcut.action.showCheatSheet" = "键盘快捷键";
 
 // MARK: Shared albums module
 "shared.confirm.title" = "从共享相册移除 %d 项？";

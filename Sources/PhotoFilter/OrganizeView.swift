@@ -12,29 +12,45 @@ import Photos
 struct OrganizeView: View {
     @ObservedObject var vm: OrganizeViewModel
     var onHome: () -> Void
+    @ObservedObject private var shortcuts = ShortcutManager.shared
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
             content
-            if vm.isZoomed, let asset = vm.selectedAsset {
-                // .id() recreates the overlay when arrows move the cursor while zoomed,
-                // so the displayed image follows the selection.
-                ZoomOverlay(asset: asset, load: vm.loadImage)
+            if vm.isComparing, let reference = vm.compareReference, let selected = vm.selectedAsset {
+                // .id() rebuilds the overlay when arrows move the cursor, so the right
+                // pane follows the selection.
+                CompareOverlay(vm: vm, reference: reference, selected: selected)
+                    .id(selected.localIdentifier + reference.localIdentifier)
+            } else if vm.isZoomed, let asset = vm.selectedAsset {
+                ZoomOverlay(vm: vm, asset: asset)
                     .id(asset.localIdentifier)
             }
         }
         .frame(minWidth: 700, minHeight: 500)
         .background(RawKeyCatcher(onKeyDown: handleKey))
         .onAppear { vm.requestAccess() }
+        // Reaching the end of the queue while zoomed/comparing: surface the queue-done
+        // screen instead of a dangling overlay.
+        .onChange(of: vm.queueFinished) { _, finished in
+            if finished {
+                vm.isZoomed = false
+                vm.isComparing = false
+            }
+        }
     }
 
     // MARK: Keyboard
 
+    /// Esc is reserved and backs out one layer at a time (compare → zoom → home);
+    /// everything else resolves through the user's ShortcutManager bindings — including
+    /// inside the zoom/compare overlays, which is what makes fully-zoomed triage work.
     private func handleKey(_ event: NSEvent) -> Bool {
-        // Esc backs out one layer at a time: zoom → home.
-        if event.keyCode == 53 {
-            if vm.isZoomed {
+        if event.keyCode == 53 {  // Esc
+            if vm.isComparing {
+                vm.isComparing = false
+            } else if vm.isZoomed {
                 vm.isZoomed = false
             } else {
                 onHome()
@@ -43,24 +59,37 @@ struct OrganizeView: View {
         }
         // Groups stream in while the scan runs — keys work as soon as any exist.
         guard !vm.groups.isEmpty else { return false }
+        guard let action = shortcuts.action(for: event, among: ShortcutAction.organizeScope) else { return false }
         if vm.queueFinished {
-            if event.keyCode == 126 {                     // ↑ steps back into the queue
+            // Only "step back into the queue" applies on the done screen.
+            if action == .prevGroup {
                 vm.queueFinished = false
                 return true
             }
             return false
         }
-        switch event.keyCode {
-        case 126: vm.selectPreviousGroup(); return true   // ↑ (browse back; no review mark)
-        case 125: vm.selectNextGroup(); return true       // ↓ (browse ahead; no review mark)
-        case 123: vm.selectPreviousPhoto(); return true   // ←
-        case 124: vm.selectNextPhoto(); return true       // →
-        case 49:  vm.isZoomed.toggle(); return true       // space
-        case 51:  vm.toggleSelected(); return true        // ⌫ delete
-        case 40:  vm.keepOnlySelected(); return true      // K
-        case 36, 76: vm.finishCurrentGroup(); return true // Enter — done with this group
-        default:  return false
+        switch action {
+        case .prevGroup: vm.selectPreviousGroup()
+        case .nextGroup: vm.selectNextGroup()
+        case .prevPhoto: vm.selectPreviousPhoto()
+        case .nextPhoto: vm.selectNextPhoto()
+        case .toggleMark: vm.toggleSelected()
+        case .keepOnly: vm.keepOnlySelected()
+        case .finishGroup: vm.finishCurrentGroup()  // overlays stay open → zoomed triage
+        case .zoom:
+            vm.isComparing = false
+            vm.isZoomed.toggle()
+        case .compare:
+            guard vm.compareReference != nil else { return true }
+            vm.isZoomed = false
+            vm.isComparing.toggle()
+        case .pixelZoom:
+            if vm.isZoomed { vm.isPixelZoomed.toggle() }
+        case .showCheatSheet:
+            NotificationCenter.default.post(name: .showCheatSheet, object: nil)
+        default: return false
         }
+        return true
     }
 
     // MARK: Content
@@ -240,9 +269,22 @@ struct OrganizeView: View {
             Text(L("organize.idle.privacy"))
                 .font(.footnote)
                 .foregroundStyle(.gray)
-            Button(L("organize.scan.start")) { vm.startScan() }
+            if let session = vm.pendingSession {
+                // A saved session resumes instantly; a fresh scan is the secondary path.
+                Button(L("organize.resume.button", session.groups.count, session.reviewedGroupIDs.count)) {
+                    vm.resumeSession()
+                }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                Text(L("organize.resume.savedAt", session.savedAt.formatted(date: .abbreviated, time: .shortened)))
+                    .font(.footnote)
+                    .foregroundStyle(.gray)
+                Button(L("organize.scan.start")) { vm.startScan() }
+            } else {
+                Button(L("organize.scan.start")) { vm.startScan() }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+            }
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -282,9 +324,24 @@ struct OrganizeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    /// Built from live bindings so customized shortcuts show up here immediately.
+    private var footerLegend: String {
+        let combo = { (action: ShortcutAction) in shortcuts.combo(for: action).display }
+        return [
+            "\(combo(.prevPhoto))/\(combo(.nextPhoto))  \(L("legend.selectPhoto"))",
+            "\(combo(.toggleMark))  \(L("legend.toggleMark"))",
+            "\(combo(.keepOnly))  \(L("legend.keepOnly"))",
+            "\(combo(.finishGroup))  \(L("legend.nextGroup"))",
+            "\(combo(.prevGroup))/\(combo(.nextGroup))  \(L("legend.browseGroups"))",
+            "\(combo(.compare))  \(L("legend.compare"))",
+            "\(combo(.zoom))  \(L("legend.zoom"))",
+            "Esc  \(L("legend.back"))",
+        ].joined(separator: "      ")
+    }
+
     private var footer: some View {
         VStack(spacing: 4) {
-            Text(L("organize.footer.keys"))
+            Text(footerLegend)
                 .font(.callout)
                 .foregroundStyle(.gray)
             if !vm.groups.isEmpty {
@@ -298,10 +355,18 @@ struct OrganizeView: View {
                     .foregroundStyle(.gray)
             }
             if let message = vm.resultMessage {
-                Text(message)
-                    .font(.footnote)
-                    .foregroundStyle(.green)
-                    .multilineTextAlignment(.center)
+                HStack(spacing: 10) {
+                    Text(message)
+                        .font(.footnote)
+                        .foregroundStyle(.green)
+                        .multilineTextAlignment(.center)
+                    if vm.deletedThisSession > 0 {
+                        Button(L("common.openPhotos")) {
+                            NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Photos.app"))
+                        }
+                        .controlSize(.small)
+                    }
+                }
             }
         }
         .padding(.vertical, 10)
@@ -470,24 +535,153 @@ private struct OrganizeThumb: View {
 
 // MARK: - Full-window zoom of the cursor photo
 
+/// All review keys keep working while this is open (the key catcher sits below every
+/// overlay), so an entire group — or the whole queue via Enter — can be triaged without
+/// ever leaving the zoom.
 private struct ZoomOverlay: View {
+    @ObservedObject var vm: OrganizeViewModel
     let asset: PHAsset
-    let load: (PHAsset, @escaping (NSImage?) -> Void) -> Void
     @State private var image: NSImage?
+
+    private var statusCapsule: some View {
+        HStack(spacing: 8) {
+            if asset.localIdentifier == vm.currentGroup?.recommendedID {
+                Image(systemName: "star.circle.fill").foregroundStyle(.yellow)
+            }
+            Text(vm.isMarked(asset) ? L("thumb.marked") : L("thumb.kept"))
+                .font(.callout.bold())
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(vm.isMarked(asset) ? .red : .green)
+                .foregroundStyle(.white)
+                .clipShape(Capsule())
+            Text("\(vm.selectedPhoto + 1) / \(vm.currentGroup?.assets.count ?? 0)")
+                .monospacedDigit()
+                .foregroundStyle(.white)
+        }
+    }
+
+    private var hintBar: String {
+        let shortcuts = ShortcutManager.shared
+        let combo = { (action: ShortcutAction) in shortcuts.combo(for: action).display }
+        return [
+            "\(combo(.toggleMark))  \(L("legend.toggleMark"))",
+            "\(combo(.keepOnly))  \(L("legend.keepOnly"))",
+            "\(combo(.finishGroup))  \(L("legend.nextGroup"))",
+            "\(combo(.pixelZoom))  \(L("legend.pixelZoom"))",
+            "Esc  \(L("legend.back"))",
+        ].joined(separator: "      ")
+    }
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.96).ignoresSafeArea()
-            if let image {
-                Image(nsImage: image).resizable().scaledToFit().padding(24)
-            } else {
-                ProgressView().tint(.white)
+            GeometryReader { geo in
+                Group {
+                    if let image {
+                        if vm.isPixelZoomed {
+                            ScrollView([.horizontal, .vertical], showsIndicators: true) {
+                                Image(nsImage: image)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: geo.size.width * 2.5, height: geo.size.height * 2.5)
+                            }
+                        } else {
+                            Image(nsImage: image)
+                                .resizable()
+                                .scaledToFit()
+                                .padding(24)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                    } else {
+                        ProgressView().tint(.white)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { vm.isPixelZoomed.toggle() }
+            }
+            VStack {
+                HStack {
+                    Spacer()
+                    statusCapsule.padding()
+                }
+                Spacer()
+                Text(hintBar)
+                    .font(.callout)
+                    .foregroundStyle(.gray)
+                    .padding(.bottom, 10)
             }
         }
         .onAppear {
             // .opportunistic delivery may call back twice (fast low-res, then sharp);
             // each call just replaces what's shown.
-            load(asset) { img in
+            vm.loadImage(for: asset) { img in
+                Task { @MainActor in self.image = img }
+            }
+        }
+    }
+}
+
+// MARK: - Side-by-side compare (cursor photo vs the group's keeper)
+
+private struct CompareOverlay: View {
+    @ObservedObject var vm: OrganizeViewModel
+    let reference: PHAsset
+    let selected: PHAsset
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.96).ignoresSafeArea()
+            VStack(spacing: 0) {
+                HStack(spacing: 2) {
+                    ComparePane(vm: vm, asset: reference, titleKey: "compare.reference")
+                    ComparePane(vm: vm, asset: selected, titleKey: "compare.selection")
+                }
+                Text("\(ShortcutManager.shared.combo(for: .compare).display) / Esc  \(L("legend.back"))")
+                    .font(.callout)
+                    .foregroundStyle(.gray)
+                    .padding(.vertical, 8)
+            }
+        }
+    }
+}
+
+private struct ComparePane: View {
+    @ObservedObject var vm: OrganizeViewModel
+    let asset: PHAsset
+    let titleKey: String
+    @State private var image: NSImage?
+
+    var body: some View {
+        VStack(spacing: 6) {
+            HStack(spacing: 8) {
+                if asset.localIdentifier == vm.currentGroup?.recommendedID {
+                    Image(systemName: "star.circle.fill").foregroundStyle(.yellow)
+                }
+                Text(L(titleKey))
+                    .foregroundStyle(.white)
+                Text(vm.isMarked(asset) ? L("thumb.marked") : L("thumb.kept"))
+                    .font(.caption.bold())
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(vm.isMarked(asset) ? .red : .green)
+                    .foregroundStyle(.white)
+                    .clipShape(Capsule())
+            }
+            .padding(.top, 12)
+            Group {
+                if let image {
+                    Image(nsImage: image).resizable().scaledToFit()
+                } else {
+                    ProgressView().tint(.white)
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(10)
+        }
+        .onAppear {
+            vm.loadImage(for: asset) { img in
                 Task { @MainActor in self.image = img }
             }
         }

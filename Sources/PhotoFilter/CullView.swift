@@ -6,6 +6,7 @@ struct CullView: View {
     /// Optional route back to the module home screen — Esc triggers it when the review
     /// grid isn't open. Optional (default nil) so the view also works standalone.
     var onHome: (() -> Void)? = nil
+    @ObservedObject private var shortcuts = ShortcutManager.shared
     @State private var isZoomed = false
 
     var body: some View {
@@ -14,26 +15,40 @@ struct CullView: View {
             content
         }
         .frame(minWidth: 700, minHeight: 500)
-        // KeyCatcher sits behind everything, full-window, and owns keyboard input.
-        .background(
-            KeyCatcher(
-                enabled: !vm.isReviewingMarked,
-                onLeft: { vm.markDelete() },
-                onRight: { vm.keep() },
-                onUndo: { vm.undo() },
-                onZoom: { isZoomed.toggle() },
-                onEscape: {
-                    if vm.isReviewingMarked {
-                        vm.isReviewingMarked = false
-                    } else {
-                        onHome?()
-                    }
-                }
-            )
-        )
+        // The key catcher sits behind everything, full-window, and owns keyboard input.
+        .background(RawKeyCatcher(onKeyDown: handleKey))
         .onChange(of: vm.index) { _, _ in isZoomed = false }
         .onChange(of: vm.isReviewingMarked) { _, _ in isZoomed = false }
         .onAppear { vm.requestAccess() }
+    }
+
+    /// Esc and ⌘Z are reserved (always behave the same); everything else resolves
+    /// through the user's ShortcutManager bindings.
+    private func handleKey(_ event: NSEvent) -> Bool {
+        if event.keyCode == 53 {  // Esc
+            if vm.isReviewingMarked {
+                vm.isReviewingMarked = false
+            } else {
+                onHome?()
+            }
+            return true
+        }
+        // In the review grid only Esc applies; Return must fall through to the commit
+        // button's .keyboardShortcut, and culling keys must not mutate the deck.
+        guard !vm.isReviewingMarked else { return false }
+        if event.keyCode == 6, event.modifierFlags.contains(.command) {  // ⌘Z
+            vm.undo()
+            return true
+        }
+        switch shortcuts.action(for: event, among: ShortcutAction.cullScope) {
+        case .markDelete: vm.markDelete()
+        case .keep: vm.keep()
+        case .undo: vm.undo()
+        case .zoom: isZoomed.toggle()
+        case .showCheatSheet: NotificationCenter.default.post(name: .showCheatSheet, object: nil)
+        default: return false
+        }
+        return true
     }
 
     @ViewBuilder
@@ -165,9 +180,20 @@ struct CullView: View {
         .background(Color.black)
     }
 
+    /// Built from live bindings so a customized shortcut shows up here immediately.
+    private var footerLegend: String {
+        [
+            "\(shortcuts.combo(for: .markDelete).display)  \(L("legend.delete"))",
+            "\(shortcuts.combo(for: .keep).display)  \(L("legend.keep"))",
+            "\(shortcuts.combo(for: .undo).display) / ⌘Z  \(L("legend.undo"))",
+            "\(shortcuts.combo(for: .zoom).display)  \(L("legend.zoom"))",
+            "Esc  \(L("legend.home"))",
+        ].joined(separator: "      ")
+    }
+
     private var footer: some View {
         VStack(spacing: 4) {
-            Text(L("cull.footer.keys"))
+            Text(footerLegend)
                 .font(.callout)
                 .foregroundStyle(.gray)
             if let message = vm.resultMessage {

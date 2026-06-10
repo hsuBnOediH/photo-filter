@@ -20,12 +20,29 @@ final class OrganizeViewModel: ObservableObject {
     @Published var authStatus: PHAuthorizationStatus = .notDetermined
     @Published private(set) var phase: ScanPhase = .idle
     @Published private(set) var groups: [PhotoGroup] = []
-    @Published var timeWindow: TimeWindow = .fiveMinutes
-    @Published var similarity: SimilarityLevel = .standard
+    @Published var timeWindow: TimeWindow {
+        didSet { UserDefaults.standard.set(timeWindow.rawValue, forKey: "organize.timeWindow") }
+    }
+    @Published var similarity: SimilarityLevel {
+        didSet { UserDefaults.standard.set(similarity.rawValue, forKey: "organize.similarity") }
+    }
     @Published private(set) var markedIDs: Set<String> = []
     @Published private(set) var selectedGroup = 0
     @Published private(set) var selectedPhoto = 0
-    @Published var isZoomed = false
+    @Published var isZoomed = false {
+        didSet { if !isZoomed { isPixelZoomed = false } }
+    }
+    /// Actual-pixels pan inside the zoom overlay (toggled by the pixelZoom shortcut or
+    /// clicking the image). Survives cursor moves so a whole group can be flipped
+    /// through at full magnification; resets when the overlay closes.
+    @Published var isPixelZoomed = false
+    /// Side-by-side compare of the cursor photo vs the group's keeper. Mutually
+    /// exclusive with the zoom overlay.
+    @Published var isComparing = false
+    /// Summary of a persisted session found on disk, shown on the idle screen.
+    @Published private(set) var pendingSession: ScanSession?
+    /// Session-cumulative delete counter, appended to result messages.
+    @Published private(set) var deletedThisSession = 0
     /// Groups the user finished with Enter. Their marked photos are what the
     /// "删除已审待删" button deletes — unreviewed groups are never touched, so the user
     /// can stop anytime and resume with the next unreviewed group later.
@@ -64,6 +81,14 @@ final class OrganizeViewModel: ObservableObject {
     /// Bumped on every scan/cancel so completions from a superseded scan are ignored.
     private var scanGeneration = 0
     private var currentCancelFlag: CancelFlag?
+    /// Debounces session saves — every toggle would otherwise hit the disk.
+    private var sessionSaveTimer: Timer?
+
+    init() {
+        timeWindow = TimeWindow(rawValue: UserDefaults.standard.integer(forKey: "organize.timeWindow")) ?? .fiveMinutes
+        similarity = SimilarityLevel(rawValue: UserDefaults.standard.string(forKey: "organize.similarity") ?? "") ?? .standard
+        pendingSession = ScanSessionStore.load()
+    }
 
     /// Thread-safe cancellation signal polled by worker operations between assets —
     /// the operations can't read the main-actor `scanGeneration` themselves.
@@ -125,6 +150,19 @@ final class OrganizeViewModel: ObservableObject {
         markedIDs.contains(asset.localIdentifier)
     }
 
+    /// Left pane of the compare overlay: the group's keeper — or, when the cursor IS
+    /// the keeper, the nearest other unmarked photo (nil → nothing to compare against).
+    var compareReference: PHAsset? {
+        guard let group = currentGroup, let selected = selectedAsset else { return nil }
+        if selected.localIdentifier != group.recommendedID {
+            return group.assets.first { $0.localIdentifier == group.recommendedID }
+        }
+        let others = group.assets.enumerated().filter {
+            $0.element.localIdentifier != selected.localIdentifier && !isMarked($0.element)
+        }
+        return others.min { abs($0.offset - selectedPhoto) < abs($1.offset - selectedPhoto) }?.element
+    }
+
     // MARK: Lifecycle
 
     func requestAccess() {
@@ -135,10 +173,74 @@ final class OrganizeViewModel: ObservableObject {
         }
     }
 
+    // MARK: Session persistence
+
+    /// Restores the on-disk session: groups rebuilt against the live library, review
+    /// progress and marks intersected with what still exists.
+    func resumeSession() {
+        guard let session = pendingSession else { return }
+        let rebuilt = ScanSessionStore.rebuildGroups(from: session)
+        pendingSession = nil
+        guard !rebuilt.isEmpty else {
+            ScanSessionStore.clear()
+            return
+        }
+        groups = rebuilt
+        let validIDs = Set(rebuilt.flatMap(\.assets).map(\.localIdentifier))
+        markedIDs = Set(session.markedIDs).intersection(validIDs)
+        reviewedGroupIDs = Set(session.reviewedGroupIDs).intersection(Set(rebuilt.map(\.id)))
+        timeWindow = TimeWindow(rawValue: session.timeWindow) ?? timeWindow
+        similarity = SimilarityLevel(rawValue: session.similarity) ?? similarity
+        appliedTimeWindow = timeWindow
+        appliedSimilarity = similarity
+        selectedGroup = min(session.cursorGroup, groups.count - 1)
+        selectedPhoto = min(session.cursorPhoto, max((currentGroup?.assets.count ?? 1) - 1, 0))
+        queueFinished = false
+        phase = .done
+        library.startCachingThumbnails(
+            for: Array(groups.flatMap(\.assets).prefix(200)),
+            targetSize: Self.thumbPixelSize
+        )
+    }
+
+    /// Debounced (0.5 s) so rapid toggling doesn't hammer the disk; `immediately`
+    /// forces a write (used after deletes and scan completion).
+    private func scheduleSessionSave(immediately: Bool = false) {
+        sessionSaveTimer?.invalidate()
+        if immediately {
+            saveSessionNow()
+        } else {
+            sessionSaveTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
+                Task { @MainActor [weak self] in self?.saveSessionNow() }
+            }
+        }
+    }
+
+    private func saveSessionNow() {
+        guard !groups.isEmpty else {
+            ScanSessionStore.clear()
+            return
+        }
+        ScanSessionStore.save(ScanSession(
+            engineRevision: SimilarityEngine.revision,
+            savedAt: Date(),
+            timeWindow: appliedTimeWindow?.rawValue ?? timeWindow.rawValue,
+            similarity: (appliedSimilarity ?? similarity).rawValue,
+            groups: groups.map { ScanSession.Group(recommendedID: $0.id, assetIDs: $0.assets.map(\.localIdentifier)) },
+            reviewedGroupIDs: Array(reviewedGroupIDs),
+            markedIDs: Array(markedIDs),
+            cursorGroup: selectedGroup,
+            cursorPhoto: selectedPhoto
+        ))
+    }
+
     // MARK: Scan pipeline
 
     func startScan() {
         guard !isScanning, !isCommitting else { return }
+        // A new scan supersedes any stored session.
+        pendingSession = nil
+        ScanSessionStore.clear()
         scanGeneration += 1
         let generation = scanGeneration
         let flag = CancelFlag()
@@ -240,6 +342,7 @@ final class OrganizeViewModel: ObservableObject {
                 Task { @MainActor [weak self] in
                     guard let self, self.scanGeneration == generation else { return }
                     self.phase = .done
+                    self.scheduleSessionSave(immediately: true)
                 }
             }
         }
@@ -266,6 +369,7 @@ final class OrganizeViewModel: ObservableObject {
         // If the user had caught up with the queue, the fresh groups reopen it.
         queueFinished = false
         library.startCachingThumbnails(for: newGroups.flatMap(\.assets), targetSize: Self.thumbPixelSize)
+        scheduleSessionSave()
     }
 
     /// Stops the scan but KEEPS every group found so far — the user can process those
@@ -281,6 +385,7 @@ final class OrganizeViewModel: ObservableObject {
         } else {
             phase = .done
             resultMessage = L("organize.result.stopped")
+            scheduleSessionSave(immediately: true)
         }
     }
 
@@ -295,6 +400,7 @@ final class OrganizeViewModel: ObservableObject {
                 markedIDs.insert(asset.localIdentifier)
             }
         }
+        scheduleSessionSave()
     }
 
     func toggle(_ asset: PHAsset) {
@@ -303,6 +409,7 @@ final class OrganizeViewModel: ObservableObject {
         } else {
             markedIDs.insert(asset.localIdentifier)
         }
+        scheduleSessionSave()
     }
 
     func toggleSelected() {
@@ -320,6 +427,7 @@ final class OrganizeViewModel: ObservableObject {
                 markedIDs.insert(asset.localIdentifier)
             }
         }
+        scheduleSessionSave()
     }
 
     // MARK: Selection cursor
@@ -365,6 +473,7 @@ final class OrganizeViewModel: ObservableObject {
         } else {
             queueFinished = true
         }
+        scheduleSessionSave()
     }
 
     /// "删除已审待删" — deletes the marked photos of every reviewed group (the one on
@@ -401,7 +510,10 @@ final class OrganizeViewModel: ObservableObject {
                     self.pruneDeleted(deletedIDs)
                     self.markedIDs.subtract(deletedIDs)
                     if thenRemoveReviewed { self.removeReviewedGroups() }
+                    self.deletedThisSession += toDelete.count
                     self.resultMessage = L("result.deleted", toDelete.count)
+                        + " " + L("result.sessionTotal", self.deletedThisSession)
+                    self.scheduleSessionSave(immediately: true)
                 } else {
                     self.resultMessage = L("result.failed", error?.localizedDescription ?? L("result.userCancelled"))
                 }

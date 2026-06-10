@@ -18,10 +18,13 @@ if ! diff <(echo "$EN_KEYS") <(echo "$ZH_KEYS") > /dev/null; then
   exit 1
 fi
 
-# Every literal L("...") in source must exist in the English table.
+# Every literal L("...") in source must exist in the English table. Keys built with
+# string interpolation (e.g. "shortcut.action.\(rawValue)") can't be checked statically
+# and are skipped.
 MISSING=0
 while IFS= read -r key; do
-  if ! grep -q "^\"$key\"" "$EN"; then
+  case "$key" in *'\('*) continue ;; esac
+  if ! grep -qF "\"$key\"" "$EN"; then
     echo "FAIL: L(\"$key\") used in source but missing from $EN" >&2
     MISSING=1
   fi

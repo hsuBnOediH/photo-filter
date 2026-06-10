@@ -49,7 +49,6 @@
 // MARK: Screenshot module (cull)
 "cull.marked.badge" = "To Delete";
 "cull.header.review" = "Review & Delete";
-"cull.footer.keys" = "←  Delete      →  Keep      ↑ / ⌘Z  Undo      Space  Zoom      Esc  Home";
 "cull.empty.screenshots" = "No screenshots found.";
 "cull.empty.all" = "No photos found.";
 "cull.finished.title" = "All reviewed 🎉";
@@ -94,11 +93,32 @@
 "organize.queueDone.title" = "All groups reviewed 🎉";
 "organize.queueDone.streamHint" = "The scan is still running — new groups will queue up automatically.";
 "organize.queueDone.back" = "↑ Back to previous group";
-"organize.footer.keys" = "←/→  Select photo      ⌫  Toggle keep/delete      K  Keep only this      Enter  Next group      ↑/↓  Browse groups      Space  Zoom      Esc  Back";
 "organize.footer.sharedWarning" = "Deletions sync to all devices; with iCloud Shared Library, deleting a shared photo affects every member.";
 "organize.footer.skipped" = "Skipped %d photos (unloadable or missing capture date)";
 "organize.result.stopped" = "Scan stopped — groups found so far are kept; features are cached, so the next scan is faster.";
 "organize.result.reviewedEmpty" = "Reviewed groups had nothing marked — removed from the queue.";
+"organize.resume.button" = "Resume last session: %1$d groups (%2$d reviewed)";
+"organize.resume.savedAt" = "Saved %@";
+"result.sessionTotal" = "(session total: %d)";
+
+// MARK: Footer legend (compact labels next to live key bindings)
+"legend.delete" = "Delete";
+"legend.keep" = "Keep";
+"legend.undo" = "Undo";
+"legend.zoom" = "Zoom";
+"legend.back" = "Back";
+"legend.home" = "Home";
+"legend.selectPhoto" = "Select photo";
+"legend.toggleMark" = "Keep/Delete";
+"legend.keepOnly" = "Keep only this";
+"legend.nextGroup" = "Next group";
+"legend.browseGroups" = "Browse groups";
+"legend.compare" = "Compare";
+"legend.pixelZoom" = "Pixel zoom";
+
+// MARK: Compare overlay
+"compare.reference" = "Current keeper";
+"compare.selection" = "Selection";
 
 // MARK: Group card
 "group.dateUnknown" = "Unknown date";
@@ -109,6 +129,22 @@
 "thumb.kept" = "Keep";
 "thumb.recommended.help" = "Suggested keeper";
 "thumb.toggle.help" = "Click to toggle keep/delete";
+
+// MARK: Shortcut action names
+"shortcut.action.markDelete" = "Mark for deletion";
+"shortcut.action.keep" = "Keep & advance";
+"shortcut.action.undo" = "Undo";
+"shortcut.action.prevGroup" = "Previous group";
+"shortcut.action.nextGroup" = "Next group";
+"shortcut.action.prevPhoto" = "Previous photo";
+"shortcut.action.nextPhoto" = "Next photo";
+"shortcut.action.toggleMark" = "Toggle keep/delete";
+"shortcut.action.keepOnly" = "Keep only this photo";
+"shortcut.action.finishGroup" = "Finish group → next";
+"shortcut.action.compare" = "Compare with keeper";
+"shortcut.action.pixelZoom" = "Pixel zoom";
+"shortcut.action.zoom" = "Zoom";
+"shortcut.action.showCheatSheet" = "Keyboard shortcuts";
 
 // MARK: Shared albums module
 "shared.confirm.title" = "Remove %d items from the shared album?";

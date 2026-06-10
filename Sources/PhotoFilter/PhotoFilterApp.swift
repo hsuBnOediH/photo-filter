@@ -6,7 +6,9 @@ struct PhotoFilterApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        WindowGroup("PhotoFilter") {
+        // Window (not WindowGroup): a second window would spawn a second set of view
+        // models and fight the first over keyboard focus and marks.
+        Window("PhotoFilter", id: "main") {
             RootView()
         }
         .defaultSize(width: 1100, height: 800)
