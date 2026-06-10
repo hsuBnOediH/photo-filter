@@ -7,3 +7,6 @@ dist/
 *.dmg
 .DS_Store
 AppIcon.iconset/
+
+# AI 协作内部笔记，不发布
+CLAUDE.md
