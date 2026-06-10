@@ -12,6 +12,16 @@ struct PhotoFilterApp: App {
             RootView()
         }
         .defaultSize(width: 1100, height: 800)
+        .commands { AppCommands() }
+
+        Window(L("about.title"), id: "about") {
+            AboutView()
+        }
+        .windowResizability(.contentSize)
+
+        Settings {
+            SettingsView()
+        }
     }
 }
 
@@ -23,9 +33,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         NSApp.windows.first?.makeKeyAndOrderFront(nil)
+        Task { @MainActor in
+            UpdateChecker.checkOnLaunchIfEnabled()
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        true
+    }
+
+    func applicationSupportsSecureRestorableState(_ app: NSApplication) -> Bool {
         true
     }
 }

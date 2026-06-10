@@ -25,6 +25,15 @@ struct CullView: View {
     /// Esc and ⌘Z are reserved (always behave the same); everything else resolves
     /// through the user's ShortcutManager bindings.
     private func handleKey(_ event: NSEvent) -> Bool {
+        // While the cheat sheet is up it owns the keyboard: Esc/? close it,
+        // everything else is swallowed so review state can't change underneath it.
+        if AppState.shared.showCheatSheet {
+            if event.keyCode == 53
+                || shortcuts.action(for: event, among: ShortcutAction.cullScope) == .showCheatSheet {
+                AppState.shared.showCheatSheet = false
+            }
+            return true
+        }
         if event.keyCode == 53 {  // Esc
             if vm.isReviewingMarked {
                 vm.isReviewingMarked = false
@@ -45,7 +54,7 @@ struct CullView: View {
         case .keep: vm.keep()
         case .undo: vm.undo()
         case .zoom: isZoomed.toggle()
-        case .showCheatSheet: NotificationCenter.default.post(name: .showCheatSheet, object: nil)
+        case .showCheatSheet: AppState.shared.showCheatSheet = true
         default: return false
         }
         return true

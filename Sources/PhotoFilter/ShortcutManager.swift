@@ -1,12 +1,6 @@
 import AppKit
 import SwiftUI
 
-extension Notification.Name {
-    /// Posted by any module's "?" binding (and the Help menu); RootView shows the
-    /// cheat-sheet overlay.
-    static let showCheatSheet = Notification.Name("PhotoFilter.showCheatSheet")
-}
-
 /// Every rebindable action in the app. Esc is deliberately NOT here — it's reserved
 /// navigation (back out of overlays / back home) and must always work; same for the
 /// review grid's Return (a SwiftUI .keyboardShortcut) and ⌘Z (hardcoded undo alias).

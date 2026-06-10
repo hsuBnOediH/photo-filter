@@ -5,6 +5,8 @@ set -euo pipefail
 
 APP_NAME="PhotoFilter"
 BUNDLE_ID="com.yukunf.photofilter"   # MUST stay stable — TCC keys the Photos grant to it.
+VERSION="${VERSION:-1.0.0}"          # override per release: VERSION=1.1.0 ./build-app.sh
+BUILD_NUMBER="${VERSION//./}"        # 1.0.0 → 100, monotonic enough for dotted versions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -52,6 +54,11 @@ if [ ! -d "$RES_BUNDLE" ]; then
 fi
 cp -R "$RES_BUNDLE" "$APP_DIR/Contents/Resources/"
 
+# App icon (regenerate with: swift Scripts/make-icon.swift)
+if [ -f "$SCRIPT_DIR/Assets/AppIcon.icns" ]; then
+  cp "$SCRIPT_DIR/Assets/AppIcon.icns" "$APP_DIR/Contents/Resources/"
+fi
+
 # Localized TCC prompt (the plist itself keeps an English fallback below).
 mkdir -p "$APP_DIR/Contents/Resources/en.lproj" "$APP_DIR/Contents/Resources/zh-Hans.lproj"
 cat > "$APP_DIR/Contents/Resources/en.lproj/InfoPlist.strings" <<'EOF'
@@ -71,10 +78,11 @@ cat > "$APP_DIR/Contents/Info.plist" <<EOF
     <key>CFBundleIdentifier</key>             <string>$BUNDLE_ID</string>
     <key>CFBundleName</key>                   <string>$APP_NAME</string>
     <key>CFBundlePackageType</key>            <string>APPL</string>
-    <key>CFBundleShortVersionString</key>     <string>1.0</string>
-    <key>CFBundleVersion</key>                <string>1</string>
+    <key>CFBundleShortVersionString</key>     <string>$VERSION</string>
+    <key>CFBundleVersion</key>                <string>$BUILD_NUMBER</string>
     <key>LSMinimumSystemVersion</key>         <string>14.0</string>
     <key>NSHighResolutionCapable</key>        <true/>
+    <key>CFBundleIconFile</key>               <string>AppIcon</string>
     <key>CFBundleDevelopmentRegion</key>      <string>en</string>
     <key>CFBundleLocalizations</key>
     <array>

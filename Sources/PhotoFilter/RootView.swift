@@ -18,21 +18,31 @@ struct RootView: View {
     @StateObject private var cullVM = CullViewModel()
     @StateObject private var organizeVM = OrganizeViewModel()
     @StateObject private var sharedVM = SharedAlbumsViewModel()
+    @ObservedObject private var appState = AppState.shared
+    @AppStorage("hasSeenOnboarding.v1") private var hasSeenOnboarding = false
 
     var body: some View {
-        switch section {
-        case .home:
-            homeView
-        case .screenshots:
-            VStack(spacing: 0) {
-                backBar
-                CullView(vm: cullVM, onHome: { section = .home })
+        ZStack {
+            switch section {
+            case .home:
+                homeView
+            case .screenshots:
+                VStack(spacing: 0) {
+                    backBar
+                    CullView(vm: cullVM, onHome: { section = .home })
+                }
+                .background(Color.black)
+            case .personal:
+                OrganizeView(vm: organizeVM, onHome: { section = .home })
+            case .sharedAlbums:
+                SharedAlbumsView(vm: sharedVM, onHome: { section = .home })
             }
-            .background(Color.black)
-        case .personal:
-            OrganizeView(vm: organizeVM, onHome: { section = .home })
-        case .sharedAlbums:
-            SharedAlbumsView(vm: sharedVM, onHome: { section = .home })
+            if appState.showCheatSheet {
+                CheatSheetView { appState.showCheatSheet = false }
+            }
+        }
+        .sheet(isPresented: Binding(get: { !hasSeenOnboarding }, set: { hasSeenOnboarding = !$0 })) {
+            OnboardingView { hasSeenOnboarding = true }
         }
     }
 
@@ -76,6 +86,13 @@ struct RootView: View {
                         action: nil
                     )
                 }
+                HStack(spacing: 8) {
+                    Text("v" + (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"))
+                    Text("·")
+                    Link("GitHub", destination: URL(string: "https://github.com/\(UpdateChecker.repo)")!)
+                }
+                .font(.footnote)
+                .foregroundStyle(.gray)
             }
             .padding(40)
         }

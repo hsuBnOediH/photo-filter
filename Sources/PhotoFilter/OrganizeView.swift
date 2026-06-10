@@ -47,6 +47,15 @@ struct OrganizeView: View {
     /// everything else resolves through the user's ShortcutManager bindings — including
     /// inside the zoom/compare overlays, which is what makes fully-zoomed triage work.
     private func handleKey(_ event: NSEvent) -> Bool {
+        // While the cheat sheet is up it owns the keyboard: Esc/? close it,
+        // everything else is swallowed so review state can't change underneath it.
+        if AppState.shared.showCheatSheet {
+            if event.keyCode == 53
+                || shortcuts.action(for: event, among: ShortcutAction.organizeScope) == .showCheatSheet {
+                AppState.shared.showCheatSheet = false
+            }
+            return true
+        }
         if event.keyCode == 53 {  // Esc
             if vm.isComparing {
                 vm.isComparing = false
@@ -86,7 +95,7 @@ struct OrganizeView: View {
         case .pixelZoom:
             if vm.isZoomed { vm.isPixelZoomed.toggle() }
         case .showCheatSheet:
-            NotificationCenter.default.post(name: .showCheatSheet, object: nil)
+            AppState.shared.showCheatSheet = true
         default: return false
         }
         return true

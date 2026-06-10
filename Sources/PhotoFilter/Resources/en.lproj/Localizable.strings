@@ -120,6 +120,55 @@
 "compare.reference" = "Current keeper";
 "compare.selection" = "Selection";
 
+// MARK: About / menus / updates
+"about.title" = "About PhotoFilter";
+"about.version" = "Version %@";
+"about.tagline" = "Free, open-source, on-device photo cleanup for your Mac.";
+"about.license" = "MIT License";
+"menu.about" = "About PhotoFilter";
+"menu.checkUpdates" = "Check for Updates…";
+"menu.cheatSheet" = "Keyboard Shortcuts";
+"menu.github" = "PhotoFilter on GitHub";
+"menu.reportIssue" = "Report an Issue";
+"update.upToDate.title" = "You're up to date";
+"update.upToDate.message" = "PhotoFilter %@ is the latest version.";
+"update.available.title" = "Version %@ is available";
+"update.available.message" = "You have %1$@; version %2$@ is available on GitHub.";
+"update.available.download" = "Download";
+"update.available.skip" = "Later";
+"update.failed.title" = "Update check failed";
+"update.failed.parse" = "Unexpected response from GitHub.";
+
+// MARK: Settings window
+"settings.general" = "General";
+"settings.shortcuts" = "Shortcuts";
+"settings.cache" = "Cache";
+"settings.general.scanNote" = "Defaults for new scans — each scan snapshots its settings when it starts.";
+"settings.general.autoUpdate" = "Check for updates automatically";
+"settings.general.languageNote" = "PhotoFilter follows the system language (English / 简体中文). You can override it per-app in System Settings.";
+"settings.general.openLanguageSettings" = "Open Language & Region Settings";
+"settings.shortcuts.cull" = "Screenshots module";
+"settings.shortcuts.organize" = "Personal Photos module";
+"settings.shortcuts.hint" = "Click a key, then press the new shortcut. Esc cancels. Esc itself can't be rebound.";
+"settings.shortcuts.recording" = "Press a key…";
+"settings.shortcuts.reset" = "Reset to Defaults";
+"settings.shortcuts.conflict" = "%1$@ is already used by “%2$@”";
+"settings.cache.featurePrints" = "Feature-print cache";
+"settings.cache.size" = "%1$d files · %2$@";
+"settings.cache.note" = "Visual fingerprints of scanned photos. Safe to clear — the next scan just recomputes them.";
+"settings.cache.clear" = "Clear Cache";
+"settings.cache.clearSession" = "Clear Saved Scan Session";
+"settings.cache.sessionNote" = "Forgets the resumable scan shown on the Personal Photos start screen.";
+
+// MARK: Cheat sheet / onboarding
+"cheatsheet.title" = "Keyboard Shortcuts";
+"cheatsheet.footer" = "Customize in Settings (⌘,) · Esc is always “back” · Click anywhere to close";
+"onboarding.title" = "Welcome to PhotoFilter";
+"onboarding.modules" = "Pick a module on the home screen: flashcard screenshot cleanup, similarity-grouped personal photos, or shared albums.";
+"onboarding.keyboard" = "Everything works from the keyboard — press ? anytime to see (and customize) the shortcuts.";
+"onboarding.safety" = "Nothing is deleted without your confirmation, and deleted photos stay in “Recently Deleted” for 30 days.";
+"onboarding.start" = "Get Started";
+
 // MARK: Group card
 "group.dateUnknown" = "Unknown date";
 "group.summary" = "%1$d photos · keeping %2$d";
