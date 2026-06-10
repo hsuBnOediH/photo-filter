@@ -40,7 +40,7 @@ struct CullView: View {
     private var content: some View {
         switch vm.authStatus {
         case .notDetermined:
-            ProgressView("正在请求照片访问权限…")
+            ProgressView(L("common.requestingAccess"))
                 .tint(.white)
                 .foregroundStyle(.white)
         case .denied, .restricted:
@@ -56,7 +56,7 @@ struct CullView: View {
                 cullingView
             }
         @unknown default:
-            Text("未知的授权状态").foregroundStyle(.white)
+            Text(L("common.unknownAuth")).foregroundStyle(.white)
         }
     }
 
@@ -105,7 +105,7 @@ struct CullView: View {
         VStack {
             HStack {
                 Spacer()
-                Text("待删除")
+                Text(L("cull.marked.badge"))
                     .font(.headline)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 8)
@@ -154,10 +154,10 @@ struct CullView: View {
             Text("\(min(vm.index + 1, vm.total)) / \(vm.total)")
                 .monospacedDigit()
                 .foregroundStyle(.white)
-            Text("待删 \(vm.markedCount)")
+            Text(L("common.markedCount", vm.markedCount))
                 .monospacedDigit()
                 .foregroundStyle(vm.markedCount > 0 ? .red : .gray)
-            Button("复核并删除") { vm.beginReview() }
+            Button(L("cull.header.review")) { vm.beginReview() }
                 .disabled(vm.markedCount == 0 || vm.isCommitting)
         }
         .padding(.horizontal)
@@ -167,7 +167,7 @@ struct CullView: View {
 
     private var footer: some View {
         VStack(spacing: 4) {
-            Text("←  删除      →  保留      ↑ / ⌘Z  撤销      空格  放大      Esc  返回首页")
+            Text(L("cull.footer.keys"))
                 .font(.callout)
                 .foregroundStyle(.gray)
             if let message = vm.resultMessage {
@@ -187,11 +187,11 @@ struct CullView: View {
     private var reviewGrid: some View {
         VStack(spacing: 0) {
             HStack(spacing: 16) {
-                Text("待删除 \(vm.markedCount) 项 — 点缩略图可移出")
+                Text(L("review.title", vm.markedCount))
                     .foregroundStyle(.white)
                 Spacer()
-                Button("返回继续") { vm.isReviewingMarked = false }
-                Button(vm.isCommitting ? "删除中…" : "确认删除 \(vm.markedCount) 项") { vm.commit() }
+                Button(L("review.back")) { vm.isReviewingMarked = false }
+                Button(vm.isCommitting ? L("review.deleting") : L("review.confirm", vm.markedCount)) { vm.commit() }
                     .keyboardShortcut(.return, modifiers: [])
                     .buttonStyle(.borderedProminent)
                     .disabled(vm.markedCount == 0 || vm.isCommitting)
@@ -222,7 +222,7 @@ struct CullView: View {
 
     private var emptyView: some View {
         VStack(spacing: 12) {
-            Text(vm.source == .screenshots ? "没有找到截图。" : "没有找到照片。")
+            Text(vm.source == .screenshots ? L("cull.empty.screenshots") : L("cull.empty.all"))
                 .foregroundStyle(.white)
             sourcePicker
         }
@@ -230,16 +230,16 @@ struct CullView: View {
 
     private var finishedView: some View {
         VStack(spacing: 16) {
-            Text("已全部审阅 🎉").font(.title).foregroundStyle(.white)
-            Text("标记待删 \(vm.markedCount) 项").foregroundStyle(.white)
+            Text(L("cull.finished.title")).font(.title).foregroundStyle(.white)
+            Text(L("cull.finished.marked", vm.markedCount)).foregroundStyle(.white)
             if vm.markedCount > 0 {
-                Button("复核并删除 (\(vm.markedCount))") { vm.beginReview() }
+                Button(L("cull.finished.review", vm.markedCount)) { vm.beginReview() }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .disabled(vm.isCommitting)
             }
-            Button("重新加载") { vm.reload() }
-            Text("↑ / ⌘Z 可撤销最后一次决定").font(.footnote).foregroundStyle(.gray)
+            Button(L("cull.finished.reload")) { vm.reload() }
+            Text(L("cull.finished.undoHint")).font(.footnote).foregroundStyle(.gray)
             if let message = vm.resultMessage {
                 Text(message)
                     .font(.footnote)
@@ -253,11 +253,11 @@ struct CullView: View {
 
     private var deniedView: some View {
         VStack(spacing: 16) {
-            Text("没有照片访问权限").font(.title2).foregroundStyle(.white)
-            Text("请在系统设置中授予「完全访问」,然后重新打开 App。")
+            Text(L("denied.title")).font(.title2).foregroundStyle(.white)
+            Text(L("denied.message"))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
-            Button("打开系统设置 → 隐私与安全性 → 照片") {
+            Button(L("denied.openSettings")) {
                 if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Photos") {
                     NSWorkspace.shared.open(url)
                 }
@@ -286,10 +286,10 @@ struct CullView: View {
     }
 
     private func typeLabel(for asset: PHAsset) -> String {
-        if asset.mediaType == .video { return "视频 " + durationString(asset.duration) }
-        if asset.mediaSubtypes.contains(.photoScreenshot) { return "截图" }
-        if asset.mediaSubtypes.contains(.photoLive) { return "实况" }
-        return "照片"
+        if asset.mediaType == .video { return L("type.video") + " " + durationString(asset.duration) }
+        if asset.mediaSubtypes.contains(.photoScreenshot) { return L("type.screenshot") }
+        if asset.mediaSubtypes.contains(.photoLive) { return L("type.live") }
+        return L("type.photo")
     }
 
     private func durationString(_ seconds: TimeInterval) -> String {
@@ -331,7 +331,7 @@ private struct MarkedThumb: View {
             }
         }
         .buttonStyle(.plain)
-        .help("点一下移出待删")
+        .help(L("thumb.unmark.help"))
         .onAppear {
             load(asset, CGSize(width: 280, height: 280)) { img in
                 Task { @MainActor in self.image = img }

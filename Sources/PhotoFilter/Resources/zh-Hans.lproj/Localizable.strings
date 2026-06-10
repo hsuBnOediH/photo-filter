@@ -1,0 +1,127 @@
+// PhotoFilter — 简体中文。
+// key 与 en.lproj/Localizable.strings 必须一一对应（CI 里 Scripts/check-l10n.sh 校验）。
+
+// MARK: Common
+"common.requestingAccess" = "正在请求照片访问权限…";
+"common.unknownAuth" = "未知的授权状态";
+"common.markedCount" = "待删 %d";
+"common.cancel" = "取消";
+"common.backHome" = "← 首页";
+"common.openPhotos" = "打开「照片」";
+
+// MARK: Home
+"home.subtitle" = "选择要整理的内容";
+"home.card.screenshots.title" = "截图清理";
+"home.card.screenshots.subtitle" = "逐张刷卡，快速清掉没用的截图";
+"home.card.personal.title" = "个人照片";
+"home.card.personal.subtitle" = "只扫自己拍的照片，按时间地点 + 相似度分组";
+"home.card.shared.title" = "共享相册";
+"home.card.shared.subtitle" = "浏览家人共享的相册，移除你自己发布的内容";
+"home.card.videos.title" = "视频";
+"home.card.videos.subtitle" = "清理重复和废片视频";
+"home.card.comingSoon" = "敬请期待";
+"nav.backHome.button" = "返回首页";
+"nav.escHint" = "按 Esc 也可返回";
+
+// MARK: Auth denied
+"denied.title" = "没有照片访问权限";
+"denied.message" = "请在系统设置中授予「完全访问」，然后重新打开 App。";
+"denied.openSettings" = "打开系统设置 → 隐私与安全性 → 照片";
+
+// MARK: Asset type labels
+"type.video" = "视频";
+"type.screenshot" = "截图";
+"type.live" = "实况";
+"type.photo" = "照片";
+
+// MARK: Sources / settings enums
+"source.screenshots" = "截图";
+"source.all" = "全部";
+"similarity.strict" = "严格";
+"similarity.standard" = "标准";
+"similarity.loose" = "宽松";
+"timeWindow.1min" = "1 分钟";
+"timeWindow.5min" = "5 分钟";
+"timeWindow.30min" = "30 分钟";
+
+// MARK: Screenshot module (cull)
+"cull.marked.badge" = "待删除";
+"cull.header.review" = "复核并删除";
+"cull.footer.keys" = "←  删除      →  保留      ↑ / ⌘Z  撤销      空格  放大      Esc  返回首页";
+"cull.empty.screenshots" = "没有找到截图。";
+"cull.empty.all" = "没有找到照片。";
+"cull.finished.title" = "已全部审阅 🎉";
+"cull.finished.marked" = "标记待删 %d 项";
+"cull.finished.review" = "复核并删除 (%d)";
+"cull.finished.reload" = "重新加载";
+"cull.finished.undoHint" = "↑ / ⌘Z 可撤销最后一次决定";
+
+// MARK: Review grid (shared by cull + organize)
+"review.title" = "待删除 %d 项 — 点缩略图可移出";
+"review.back" = "返回继续";
+"review.confirm" = "确认删除 %d 项";
+"review.deleting" = "删除中…";
+"thumb.unmark.help" = "点一下移出待删";
+
+// MARK: Delete results (shared)
+"result.deleted" = "已删除 %d 项，正在通过 iCloud 同步（进入「最近删除」，可在 30 天内恢复）。";
+"result.failed" = "未删除（已取消或出错）：%@";
+"result.userCancelled" = "用户取消";
+
+// MARK: Organize module
+"organize.idle.title" = "个人照片整理";
+"organize.idle.body" = "按拍摄时间和地点把相邻照片归组，再用本地视觉模型确认同一场景。\n一次只看一组：每组自动推荐保留最好的一张，你调整后按 Enter 看下一组，\n随时点「删除已审待删」清掉已审阅组的弃片 — 没看过的组绝不会被动到。";
+"organize.idle.privacy" = "分析全部在本机完成，不会上传照片；在你确认删除之前不会改动照片库。";
+"organize.scan.start" = "开始扫描";
+"organize.scan.again" = "重新扫描";
+"organize.setting.timeWindow" = "时间窗口";
+"organize.setting.similarity" = "相似度";
+"organize.header.progress" = "第 %1$d / %2$d 组 · 已审 %3$d";
+"organize.header.deleteReviewed" = "删除已审待删 (%d)";
+"organize.limitedBanner" = "受限访问模式：仅扫描已授权的照片";
+"organize.settingsChanged" = "设置已更改，重新扫描后生效";
+"organize.phase.fetching" = "正在读取照片库…";
+"organize.phase.analyzing" = "正在分析照片特征  %1$d / %2$d — 找到的组会立即显示";
+"organize.banner.analyzing" = "分析中 %1$d / %2$d — 可以边扫边审阅";
+"organize.banner.stop" = "停止扫描";
+"organize.cancelled.message" = "已取消 — 已分析的照片特征已缓存，下次扫描会更快。";
+"organize.empty.title" = "没有发现相似照片组 🎉";
+"organize.empty.hint" = "可尝试放宽相似度或加大时间窗口后重新扫描。";
+"organize.review.enterHint" = "调整好去留后按 Enter 看下一组";
+"organize.queueDone.scanning" = "当前找到的组都看完了";
+"organize.queueDone.title" = "这一轮已全部审阅 🎉";
+"organize.queueDone.streamHint" = "扫描还在进行，新发现的组会自动续上。";
+"organize.queueDone.back" = "↑ 回看上一组";
+"organize.footer.keys" = "←/→  选择照片      ⌫  切换保留/待删      K  仅保留这张      Enter  下一组      ↑/↓  前后翻组      空格  放大      Esc  返回";
+"organize.footer.sharedWarning" = "删除会同步到所有设备；如启用 iCloud 共享图库，删除共享照片将对所有成员生效。";
+"organize.footer.skipped" = "跳过 %d 张（无法加载或无拍摄时间）";
+"organize.result.stopped" = "已停止扫描 — 已找到的组保留；特征已缓存，下次扫描会更快。";
+"organize.result.reviewedEmpty" = "已审阅的组没有待删照片，已从队列移除。";
+
+// MARK: Group card
+"group.dateUnknown" = "未知时间";
+"group.summary" = "%1$d 张 · 保留 %2$d 张";
+"group.reset" = "重置为推荐";
+"group.deleteNow" = "立即删除本组待删 (%d)";
+"thumb.marked" = "待删";
+"thumb.kept" = "保留";
+"thumb.recommended.help" = "推荐保留";
+"thumb.toggle.help" = "点一下切换保留/待删";
+
+// MARK: Shared albums module
+"shared.confirm.title" = "从共享相册移除 %d 项？";
+"shared.confirm.remove" = "移除";
+"shared.confirm.message" = "移除立即对所有成员生效，且不会进入「最近删除」、无法恢复。只能移除你自己发布的照片。";
+"shared.empty.title" = "没有找到共享相册";
+"shared.empty.body" = "这里展示的是 iCloud「共享相册」。如果这里是空的、但「个人照片」里仍能看到家人的照片，说明你们使用的是 iCloud「共享图库」—— Apple 没有提供 API 区分共享图库中的照片，App 无法把它们和你自己拍的分开，只能在删除前提醒（删除会对所有成员生效）。";
+"shared.empty.recheck" = "重新检查";
+"shared.album.untitled" = "未命名相册";
+"shared.header.count" = "%d 项";
+"shared.header.marked" = "待移除 %d";
+"shared.header.removing" = "移除中…";
+"shared.header.removeButton" = "移除所选";
+"shared.footer.hint" = "点缩略图标记/取消标记 — 只能移除你自己发布的照片；移除对所有成员生效，不可恢复";
+"shared.result.removed" = "已从「%1$@」移除 %2$d 项，对所有成员生效。";
+"shared.result.failed" = "移除失败：%@。注意：只能移除你自己发布的照片，批次里含他人照片会整批失败。";
+"shared.error.unknown" = "未知错误";
+"thumb.toRemove" = "待移除";

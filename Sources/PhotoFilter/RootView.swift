@@ -46,30 +46,35 @@ struct RootView: View {
                     Text("PhotoFilter")
                         .font(.system(size: 40, weight: .bold))
                         .foregroundStyle(.white)
-                    Text("选择要整理的内容")
+                    Text(L("home.subtitle"))
                         .font(.title3)
                         .foregroundStyle(.gray)
                 }
                 LazyVGrid(columns: [GridItem(.fixed(260)), GridItem(.fixed(260))], spacing: 16) {
                     ModuleCard(
                         icon: "camera.viewfinder",
-                        title: "截图清理",
-                        subtitle: "逐张刷卡,快速清掉没用的截图",
+                        title: L("home.card.screenshots.title"),
+                        subtitle: L("home.card.screenshots.subtitle"),
                         action: { section = .screenshots }
                     )
                     ModuleCard(
                         icon: "photo.stack",
-                        title: "个人照片",
-                        subtitle: "只扫自己拍的照片,按时间地点 + 相似度分组",
+                        title: L("home.card.personal.title"),
+                        subtitle: L("home.card.personal.subtitle"),
                         action: { section = .personal }
                     )
                     ModuleCard(
                         icon: "person.2.crop.square.stack",
-                        title: "共享相册",
-                        subtitle: "浏览家人共享的相册,移除你自己发布的内容",
+                        title: L("home.card.shared.title"),
+                        subtitle: L("home.card.shared.subtitle"),
                         action: { section = .sharedAlbums }
                     )
-                    ModuleCard(icon: "video", title: "视频", subtitle: "清理重复和废片视频", action: nil)
+                    ModuleCard(
+                        icon: "video",
+                        title: L("home.card.videos.title"),
+                        subtitle: L("home.card.videos.subtitle"),
+                        action: nil
+                    )
                 }
             }
             .padding(40)
@@ -80,10 +85,10 @@ struct RootView: View {
     private var backBar: some View {
         HStack(spacing: 10) {
             Button(action: { section = .home }) {
-                Label("返回首页", systemImage: "chevron.left")
+                Label(L("nav.backHome.button"), systemImage: "chevron.left")
             }
             .buttonStyle(.bordered)
-            Text("按 Esc 也可返回")
+            Text(L("nav.escHint"))
                 .font(.footnote)
                 .foregroundStyle(.gray)
             Spacer()
@@ -111,7 +116,7 @@ private struct ModuleCard: View {
                         .foregroundStyle(action != nil ? .white : .gray)
                     Spacer()
                     if action == nil {
-                        Text("敬请期待")
+                        Text(L("home.card.comingSoon"))
                             .font(.caption)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)

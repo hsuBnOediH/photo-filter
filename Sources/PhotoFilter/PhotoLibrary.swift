@@ -10,8 +10,8 @@ enum PhotoSource: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .screenshots: return "截图"
-        case .all: return "全部"
+        case .screenshots: return L("source.screenshots")
+        case .all: return L("source.all")
         }
     }
 }

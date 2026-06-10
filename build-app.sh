@@ -41,6 +41,26 @@ mkdir -p "$APP_DIR/Contents/MacOS"
 mkdir -p "$APP_DIR/Contents/Resources"
 cp "$BIN_PATH" "$APP_DIR/Contents/MacOS/$APP_NAME"
 
+# SwiftPM packs Localizable.strings into this bundle, and the generated
+# Bundle.module accessor looks for it in Contents/Resources when running inside
+# a .app — without this copy the app CRASHES on the first localized string.
+# The arm64 build's copy is fine for universal builds (strings are arch-free).
+RES_BUNDLE="$(swift build -c release --show-bin-path)/${APP_NAME}_${APP_NAME}.bundle"
+if [ ! -d "$RES_BUNDLE" ]; then
+  echo "Build failed: resource bundle not found at $RES_BUNDLE" >&2
+  exit 1
+fi
+cp -R "$RES_BUNDLE" "$APP_DIR/Contents/Resources/"
+
+# Localized TCC prompt (the plist itself keeps an English fallback below).
+mkdir -p "$APP_DIR/Contents/Resources/en.lproj" "$APP_DIR/Contents/Resources/zh-Hans.lproj"
+cat > "$APP_DIR/Contents/Resources/en.lproj/InfoPlist.strings" <<'EOF'
+"NSPhotoLibraryUsageDescription" = "PhotoFilter needs access to your photo library to browse and delete photos.";
+EOF
+cat > "$APP_DIR/Contents/Resources/zh-Hans.lproj/InfoPlist.strings" <<'EOF'
+"NSPhotoLibraryUsageDescription" = "PhotoFilter 需要访问你的照片图库，以便浏览并删除照片。";
+EOF
+
 # NSPhotoLibraryUsageDescription is mandatory — without it macOS silently denies access.
 cat > "$APP_DIR/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -55,7 +75,15 @@ cat > "$APP_DIR/Contents/Info.plist" <<EOF
     <key>CFBundleVersion</key>                <string>1</string>
     <key>LSMinimumSystemVersion</key>         <string>14.0</string>
     <key>NSHighResolutionCapable</key>        <true/>
-    <key>NSPhotoLibraryUsageDescription</key> <string>PhotoFilter 需要访问你的照片图库,以便浏览并删除照片。</string>
+    <key>CFBundleDevelopmentRegion</key>      <string>en</string>
+    <key>CFBundleLocalizations</key>
+    <array>
+        <string>en</string>
+        <string>zh-Hans</string>
+    </array>
+    <key>LSApplicationCategoryType</key>      <string>public.app-category.photography</string>
+    <key>NSHumanReadableCopyright</key>       <string>MIT License</string>
+    <key>NSPhotoLibraryUsageDescription</key> <string>PhotoFilter needs access to your photo library to browse and delete photos.</string>
 </dict>
 </plist>
 EOF

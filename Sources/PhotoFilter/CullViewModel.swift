@@ -158,11 +158,11 @@ final class CullViewModel: ObservableObject {
                     self.undoStack = []
                     self.isReviewingMarked = false
                     if self.index > self.assets.count { self.index = self.assets.count }
-                    self.resultMessage = "已删除 \(count) 项,正在通过 iCloud 同步到 iPhone(进入「最近删除」,可在 30 天内恢复)。"
+                    self.resultMessage = L("result.deleted", count)
                     self.loadCurrent()
                     self.saveProgress()
                 } else {
-                    self.resultMessage = "未删除(已取消或出错):\(error?.localizedDescription ?? "用户取消")"
+                    self.resultMessage = L("result.failed", error?.localizedDescription ?? L("result.userCancelled"))
                 }
             }
         }

@@ -13,9 +13,9 @@ enum SimilarityLevel: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .strict: return "严格"
-        case .standard: return "标准"
-        case .loose: return "宽松"
+        case .strict: return L("similarity.strict")
+        case .standard: return L("similarity.standard")
+        case .loose: return L("similarity.loose")
         }
     }
 

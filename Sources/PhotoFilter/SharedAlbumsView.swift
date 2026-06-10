@@ -20,11 +20,11 @@ struct SharedAlbumsView: View {
             return true
         }))
         .onAppear { vm.requestAccess() }
-        .alert("从共享相册移除 \(vm.markedCount) 项?", isPresented: $isConfirmingRemoval) {
-            Button("移除", role: .destructive) { vm.commitRemoval() }
-            Button("取消", role: .cancel) {}
+        .alert(L("shared.confirm.title", vm.markedCount), isPresented: $isConfirmingRemoval) {
+            Button(L("shared.confirm.remove"), role: .destructive) { vm.commitRemoval() }
+            Button(L("common.cancel"), role: .cancel) {}
         } message: {
-            Text("移除立即对所有成员生效,且不会进入「最近删除」、无法恢复。只能移除你自己发布的照片。")
+            Text(L("shared.confirm.message"))
         }
     }
 
@@ -32,16 +32,16 @@ struct SharedAlbumsView: View {
     private var content: some View {
         switch vm.authStatus {
         case .notDetermined:
-            ProgressView("正在请求照片访问权限…")
+            ProgressView(L("common.requestingAccess"))
                 .tint(.white)
                 .foregroundStyle(.white)
         case .denied, .restricted:
             VStack(spacing: 16) {
-                Text("没有照片访问权限").font(.title2).foregroundStyle(.white)
-                Text("请在系统设置中授予「完全访问」,然后重新打开 App。")
+                Text(L("denied.title")).font(.title2).foregroundStyle(.white)
+                Text(L("denied.message"))
                     .foregroundStyle(.white)
                     .multilineTextAlignment(.center)
-                Button("打开系统设置 → 隐私与安全性 → 照片") {
+                Button(L("denied.openSettings")) {
                     if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Photos") {
                         NSWorkspace.shared.open(url)
                     }
@@ -60,29 +60,26 @@ struct SharedAlbumsView: View {
                 }
             }
         @unknown default:
-            Text("未知的授权状态").foregroundStyle(.white)
+            Text(L("common.unknownAuth")).foregroundStyle(.white)
         }
     }
 
     private var emptyState: some View {
         VStack(spacing: 14) {
             HStack {
-                Button("← 首页") { onHome() }
+                Button(L("common.backHome")) { onHome() }
                 Spacer()
             }
             .padding(.horizontal)
             .padding(.top, 10)
             Spacer()
-            Text("没有找到共享相册").font(.title3).foregroundStyle(.white)
-            Text("""
-            这里展示的是 iCloud「共享相册」。如果这里是空的、但「个人照片」里仍能看到家人的照片,
-            说明你们使用的是 iCloud「共享图库」—— Apple 没有提供 API 区分共享图库中的照片,
-            App 无法把它们和你自己拍的分开,只能在删除前提醒(删除会对所有成员生效)。
-            """)
-            .font(.callout)
-            .foregroundStyle(.gray)
-            .multilineTextAlignment(.center)
-            Button("重新检查") { vm.reloadAlbums() }
+            Text(L("shared.empty.title")).font(.title3).foregroundStyle(.white)
+            Text(L("shared.empty.body"))
+                .font(.callout)
+                .foregroundStyle(.gray)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 560)
+            Button(L("shared.empty.recheck")) { vm.reloadAlbums() }
             Spacer()
         }
         .padding()
@@ -90,21 +87,21 @@ struct SharedAlbumsView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Button("← 首页") { onHome() }
+            Button(L("common.backHome")) { onHome() }
             Picker("", selection: Binding(get: { vm.selectedAlbumIndex }, set: { vm.selectAlbum($0) })) {
                 ForEach(Array(vm.albums.enumerated()), id: \.offset) { pair in
-                    Text(pair.element.localizedTitle ?? "未命名相册").tag(pair.offset)
+                    Text(pair.element.localizedTitle ?? L("shared.album.untitled")).tag(pair.offset)
                 }
             }
             .fixedSize()
-            Text("\(vm.assets.count) 项")
+            Text(L("shared.header.count", vm.assets.count))
                 .monospacedDigit()
                 .foregroundStyle(.gray)
             Spacer()
-            Text("待移除 \(vm.markedCount)")
+            Text(L("shared.header.marked", vm.markedCount))
                 .monospacedDigit()
                 .foregroundStyle(vm.markedCount > 0 ? .red : .gray)
-            Button(vm.isCommitting ? "移除中…" : "移除所选") { isConfirmingRemoval = true }
+            Button(vm.isCommitting ? L("shared.header.removing") : L("shared.header.removeButton")) { isConfirmingRemoval = true }
                 .disabled(vm.markedCount == 0 || vm.isCommitting)
         }
         .padding(.horizontal)
@@ -131,13 +128,13 @@ struct SharedAlbumsView: View {
 
     private var footer: some View {
         VStack(spacing: 4) {
-            Text("点缩略图标记/取消标记 — 只能移除你自己发布的照片;移除对所有成员生效,不可恢复")
+            Text(L("shared.footer.hint"))
                 .font(.callout)
                 .foregroundStyle(.gray)
             if let message = vm.resultMessage {
                 Text(message)
                     .font(.footnote)
-                    .foregroundStyle(message.contains("失败") ? .orange : .green)
+                    .foregroundStyle(vm.lastRemovalFailed ? .orange : .green)
                     .multilineTextAlignment(.center)
             }
         }
@@ -177,7 +174,7 @@ private struct SharedThumb: View {
                     }
                 }
                 if isMarked {
-                    Text("待移除")
+                    Text(L("thumb.toRemove"))
                         .font(.caption.bold())
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)

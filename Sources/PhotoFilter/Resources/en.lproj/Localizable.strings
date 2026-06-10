@@ -1,0 +1,129 @@
+// PhotoFilter — English strings.
+// Key convention: <module>.<area>.<name>; "common.*" is shared across modules.
+// Keep this file and zh-Hans.lproj/Localizable.strings key-identical
+// (Scripts/check-l10n.sh enforces it in CI).
+
+// MARK: Common
+"common.requestingAccess" = "Requesting photo library access…";
+"common.unknownAuth" = "Unknown authorization status";
+"common.markedCount" = "To delete: %d";
+"common.cancel" = "Cancel";
+"common.backHome" = "← Home";
+"common.openPhotos" = "Open Photos";
+
+// MARK: Home
+"home.subtitle" = "Choose what to clean up";
+"home.card.screenshots.title" = "Screenshots";
+"home.card.screenshots.subtitle" = "Flashcard-style review to clear out useless screenshots";
+"home.card.personal.title" = "Personal Photos";
+"home.card.personal.subtitle" = "Scans only your own shots, grouped by time, place and similarity";
+"home.card.shared.title" = "Shared Albums";
+"home.card.shared.subtitle" = "Browse shared albums and remove your own posts";
+"home.card.videos.title" = "Videos";
+"home.card.videos.subtitle" = "Clean up duplicate and junk videos";
+"home.card.comingSoon" = "Coming soon";
+"nav.backHome.button" = "Back to Home";
+"nav.escHint" = "Esc also goes back";
+
+// MARK: Auth denied
+"denied.title" = "No Photo Library Access";
+"denied.message" = "Grant “Full Access” in System Settings, then reopen the app.";
+"denied.openSettings" = "Open System Settings → Privacy & Security → Photos";
+
+// MARK: Asset type labels
+"type.video" = "Video";
+"type.screenshot" = "Screenshot";
+"type.live" = "Live";
+"type.photo" = "Photo";
+
+// MARK: Sources / settings enums
+"source.screenshots" = "Screenshots";
+"source.all" = "All";
+"similarity.strict" = "Strict";
+"similarity.standard" = "Standard";
+"similarity.loose" = "Loose";
+"timeWindow.1min" = "1 min";
+"timeWindow.5min" = "5 min";
+"timeWindow.30min" = "30 min";
+
+// MARK: Screenshot module (cull)
+"cull.marked.badge" = "To Delete";
+"cull.header.review" = "Review & Delete";
+"cull.footer.keys" = "←  Delete      →  Keep      ↑ / ⌘Z  Undo      Space  Zoom      Esc  Home";
+"cull.empty.screenshots" = "No screenshots found.";
+"cull.empty.all" = "No photos found.";
+"cull.finished.title" = "All reviewed 🎉";
+"cull.finished.marked" = "%d marked for deletion";
+"cull.finished.review" = "Review & Delete (%d)";
+"cull.finished.reload" = "Start Over";
+"cull.finished.undoHint" = "↑ / ⌘Z undoes the last decision";
+
+// MARK: Review grid (shared by cull + organize)
+"review.title" = "%d to delete — click a thumbnail to remove it";
+"review.back" = "Keep Reviewing";
+"review.confirm" = "Delete %d Items";
+"review.deleting" = "Deleting…";
+"thumb.unmark.help" = "Click to remove from deletion";
+
+// MARK: Delete results (shared)
+"result.deleted" = "Deleted %d items — syncing via iCloud (now in “Recently Deleted”, recoverable for 30 days).";
+"result.failed" = "Nothing deleted (cancelled or failed): %@";
+"result.userCancelled" = "cancelled by user";
+
+// MARK: Organize module
+"organize.idle.title" = "Personal Photo Cleanup";
+"organize.idle.body" = "Nearby photos are grouped by capture time and location, then a local vision model confirms they're the same scene.\nOne group at a time: the best shot is auto-suggested, you adjust, press Enter for the next group,\nand hit “Delete Reviewed” anytime — groups you haven't seen are never touched.";
+"organize.idle.privacy" = "Analysis runs entirely on-device — nothing is uploaded, and your library is untouched until you confirm a deletion.";
+"organize.scan.start" = "Start Scan";
+"organize.scan.again" = "Rescan";
+"organize.setting.timeWindow" = "Time window";
+"organize.setting.similarity" = "Similarity";
+"organize.header.progress" = "Group %1$d of %2$d · %3$d reviewed";
+"organize.header.deleteReviewed" = "Delete Reviewed (%d)";
+"organize.limitedBanner" = "Limited access: only authorized photos are scanned";
+"organize.settingsChanged" = "Settings changed — takes effect on the next scan";
+"organize.phase.fetching" = "Reading photo library…";
+"organize.phase.analyzing" = "Analyzing photos  %1$d / %2$d — groups appear as they're found";
+"organize.banner.analyzing" = "Analyzing %1$d / %2$d — you can review while it runs";
+"organize.banner.stop" = "Stop Scan";
+"organize.cancelled.message" = "Cancelled — analyzed features are cached, so the next scan will be faster.";
+"organize.empty.title" = "No similar photo groups found 🎉";
+"organize.empty.hint" = "Try a looser similarity or a larger time window, then rescan.";
+"organize.review.enterHint" = "Adjust keep/delete, then press Enter for the next group";
+"organize.queueDone.scanning" = "You've reviewed every group found so far";
+"organize.queueDone.title" = "All groups reviewed 🎉";
+"organize.queueDone.streamHint" = "The scan is still running — new groups will queue up automatically.";
+"organize.queueDone.back" = "↑ Back to previous group";
+"organize.footer.keys" = "←/→  Select photo      ⌫  Toggle keep/delete      K  Keep only this      Enter  Next group      ↑/↓  Browse groups      Space  Zoom      Esc  Back";
+"organize.footer.sharedWarning" = "Deletions sync to all devices; with iCloud Shared Library, deleting a shared photo affects every member.";
+"organize.footer.skipped" = "Skipped %d photos (unloadable or missing capture date)";
+"organize.result.stopped" = "Scan stopped — groups found so far are kept; features are cached, so the next scan is faster.";
+"organize.result.reviewedEmpty" = "Reviewed groups had nothing marked — removed from the queue.";
+
+// MARK: Group card
+"group.dateUnknown" = "Unknown date";
+"group.summary" = "%1$d photos · keeping %2$d";
+"group.reset" = "Reset to Suggestion";
+"group.deleteNow" = "Delete This Group's Rejects (%d)";
+"thumb.marked" = "Delete";
+"thumb.kept" = "Keep";
+"thumb.recommended.help" = "Suggested keeper";
+"thumb.toggle.help" = "Click to toggle keep/delete";
+
+// MARK: Shared albums module
+"shared.confirm.title" = "Remove %d items from the shared album?";
+"shared.confirm.remove" = "Remove";
+"shared.confirm.message" = "Removal takes effect immediately for every member and does NOT go to “Recently Deleted” — it cannot be undone. You can only remove photos you posted yourself.";
+"shared.empty.title" = "No shared albums found";
+"shared.empty.body" = "This module shows iCloud “Shared Albums”. If it's empty but family photos still appear in Personal Photos, you're using the iCloud “Shared Library” — Apple provides no API to tell those photos apart, so the app can only warn you before deleting (deletions affect every member).";
+"shared.empty.recheck" = "Check Again";
+"shared.album.untitled" = "Untitled Album";
+"shared.header.count" = "%d items";
+"shared.header.marked" = "To remove: %d";
+"shared.header.removing" = "Removing…";
+"shared.header.removeButton" = "Remove Selected";
+"shared.footer.hint" = "Click thumbnails to mark/unmark — only your own posts can be removed; removal affects all members and cannot be undone";
+"shared.result.removed" = "Removed %2$d items from “%1$@” — effective for all members.";
+"shared.result.failed" = "Removal failed: %@. Note: only your own posts can be removed — a batch containing someone else's photo fails as a whole.";
+"shared.error.unknown" = "unknown error";
+"thumb.toRemove" = "Remove";

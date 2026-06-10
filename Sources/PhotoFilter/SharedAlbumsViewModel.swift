@@ -18,6 +18,8 @@ final class SharedAlbumsViewModel: ObservableObject {
     @Published private(set) var markedIDs: Set<String> = []
     @Published private(set) var isCommitting = false
     @Published var resultMessage: String?
+    /// Drives the result line's color — checking message text would break across locales.
+    @Published private(set) var lastRemovalFailed = false
 
     private let library = PhotoLibrary()
     private let thumbCache: NSCache<NSString, NSImage> = {
@@ -91,9 +93,13 @@ final class SharedAlbumsViewModel: ObservableObject {
                     let removedIDs = Set(toRemove.map(\.localIdentifier))
                     self.assets.removeAll { removedIDs.contains($0.localIdentifier) }
                     self.markedIDs = []
-                    self.resultMessage = "已从「\(album.localizedTitle ?? "相册")」移除 \(toRemove.count) 项,对所有成员生效。"
+                    self.lastRemovalFailed = false
+                    self.resultMessage = L("shared.result.removed",
+                                           album.localizedTitle ?? L("shared.album.untitled"), toRemove.count)
                 } else {
-                    self.resultMessage = "移除失败:\(error?.localizedDescription ?? "未知错误")。注意:只能移除你自己发布的照片,批次里含他人照片会整批失败。"
+                    self.lastRemovalFailed = true
+                    self.resultMessage = L("shared.result.failed",
+                                           error?.localizedDescription ?? L("shared.error.unknown"))
                 }
             }
         }

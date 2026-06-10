@@ -280,7 +280,7 @@ final class OrganizeViewModel: ObservableObject {
             phase = .cancelled
         } else {
             phase = .done
-            resultMessage = "已停止扫描 — 已找到的组保留;特征已缓存,下次扫描会更快。"
+            resultMessage = L("organize.result.stopped")
         }
     }
 
@@ -376,7 +376,7 @@ final class OrganizeViewModel: ObservableObject {
         let toDelete = reviewedMarkedAssets
         if toDelete.isEmpty {
             removeReviewedGroups()
-            resultMessage = "已审阅的组没有待删照片,已从队列移除。"
+            resultMessage = L("organize.result.reviewedEmpty")
         } else {
             performDelete(toDelete, thenRemoveReviewed: true)
         }
@@ -401,9 +401,9 @@ final class OrganizeViewModel: ObservableObject {
                     self.pruneDeleted(deletedIDs)
                     self.markedIDs.subtract(deletedIDs)
                     if thenRemoveReviewed { self.removeReviewedGroups() }
-                    self.resultMessage = "已删除 \(toDelete.count) 项,正在通过 iCloud 同步到 iPhone(进入「最近删除」,可在 30 天内恢复)。"
+                    self.resultMessage = L("result.deleted", toDelete.count)
                 } else {
-                    self.resultMessage = "未删除(已取消或出错):\(error?.localizedDescription ?? "用户取消")"
+                    self.resultMessage = L("result.failed", error?.localizedDescription ?? L("result.userCancelled"))
                 }
             }
         }

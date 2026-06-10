@@ -17,9 +17,9 @@ enum TimeWindow: Int, CaseIterable, Identifiable {
     var id: Int { rawValue }
     var label: String {
         switch self {
-        case .oneMinute: return "1 分钟"
-        case .fiveMinutes: return "5 分钟"
-        case .thirtyMinutes: return "30 分钟"
+        case .oneMinute: return L("timeWindow.1min")
+        case .fiveMinutes: return L("timeWindow.5min")
+        case .thirtyMinutes: return L("timeWindow.30min")
         }
     }
 }
